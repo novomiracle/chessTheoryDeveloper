@@ -13,7 +13,7 @@ var cy = cytoscape({
 				'width': 50,
 				'height': 50,
 				'background-color': 'saddlebrown',
-				'label': 'data(id)', // Set the label to display the id
+				'label': 'data(move)', // Set the label to display the id
 				'text-halign': 'center', // Center the text horizontally
 				'text-valign': 'center',
 
@@ -35,7 +35,7 @@ var cy = cytoscape({
 	}
 });
 
-
+let moveCounter = 1;
 // Get the chessboard element 
 var chessHistory = [{
 	piece: "none",
@@ -518,6 +518,7 @@ function createChessBoard() {
 
 function handleDrop(e) {
 	if (draggedPiece.chessPiece.type.condition(checkSquare(this), draggedPiece.chessPiece, true) && gameOn) {
+		moveCounter++
 		let ogPos = draggedPiece.parentElement
 		let ogPiece = this.children[0]
 		let take = checkSquare(this).piece != 0
@@ -874,7 +875,8 @@ function createNode(name){
 	group: 'nodes',
 	data: {
 		weight: 75,
-		id: name,
+		id: moveCounter,
+		move:name,
 		//for some reason it becomes its last child(without the first one)
 		chessPos: dclone,
 		color:color
@@ -885,9 +887,9 @@ function createNode(name){
 	cy.add({
 	group: 'edges',
 	data: {
-		id: parentName+"-"+name,
+		id: parentName+"-"+moveCounter,
 		source: parentName,
-		target: name,
+		target: moveCounter,
 	},
 })
 	cy.layout({ name: 'dagre',rankDir: 'LR', animate: false}).run();
@@ -898,6 +900,7 @@ var start = cy.add({
 	data: {
 		weight: 75,
 		id: 'start',
+		move:"start",
 		chessPos: encodeChessPieces(chessPieces),
 		color:color
 	},
