@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" type="text/css" href="css.css" />
+	<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+</head>
+
+<body>
+	<div style="display: flex; flex-direction:row ">
+	<div style="display: flex; flex-direction:column;padding-right: 10px;padding-top: 10px;">
+		<a>8</a>
+		<a>7</a>
+		<a>6</a>
+		<a>5</a>
+		<a>4</a>
+		<a>3</a>
+		<a>2</a>
+		<a>1</a>
+	</div>
+	<div id="chessGame" draggable="false">
+		<div id="chessboard" draggable="false">
+		</div>
+		
+		<div id="promotion">
+			<div id="queen" style="background-image:url('https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/wq.png');background-size: 100%;"></div>
+			<div id="rook" style="background-image:url('https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/wr.png');background-size: 100%;"></div>
+			<div id="bishop" style="background-image:url('https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/wb.png');background-size: 100%;"></div>
+			<div id="knight" style="background-image:url('https://images.chesscomfiles.com/chess-themes/pieces/neo_wood/150/wn.png');background-size: 100%;"></div>
+		</div>
+	</div>
+		<div id="cy" style="width: 600px; height: 600px;border:solid 1px black; background-color: saddlebrown"></div>
+		</div>
+	<div style="font-size: 35px;
+letter-spacing: 28px;
+padding-left: 32px;">a b c d e f g h</div>
+	<button id="download">download</button>
+	<label>upload:</label>
+	<input type="file" id="upload"/>
+	<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+	<script src="https://unpkg.com/graphlib@2.1.8/dist/graphlib.min.js"></script>
+	<script src="https://unpkg.com/cytoscape-dagre@2.3.2/cytoscape-dagre.js"></script>
+	<script src="chessBoardGenerator.js"></script>
+<!--	<script src="eventHandler.js"></script>-->
+</body>
+
+</html>
