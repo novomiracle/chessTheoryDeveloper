@@ -1,4 +1,6 @@
 //diagramm
+var downloadCy = document.getElementById("download")
+var uploadCy = document.getElementById("upload")
 var cy = cytoscape({
 	container: document.getElementById('cy'), // container to render in
 
@@ -12,7 +14,7 @@ var cy = cytoscape({
 				'shape': 'rectangle',
 				'width': 50,
 				'height': 50,
-				'background-color': 'saddlebrown',
+				'background-color': 'antiquewhite',
 				'label': 'data(move)', // Set the label to display the id
 				'text-halign': 'center', // Center the text horizontally
 				'text-valign': 'center',
@@ -34,7 +36,24 @@ var cy = cytoscape({
 		name: 'breadthfirst'
 	}
 });
-
+let chessPiecesNames = {
+	"white": {
+		"": '♙',
+		"N": '♘',
+		"B": '♗',
+		"R": '♖',
+		"Q": '♕',
+		"K": '♔'
+	},
+	"black": {
+		"": '♟',
+		"N": '♞',
+		"B": '♝',
+		"R": '♜',
+		"Q": '♛',
+		"K": '♚'
+	}
+}
 let moveCounter = 1;
 // Get the chessboard element 
 var chessHistory = [{
@@ -108,12 +127,12 @@ var king = createChessPiecePrototype("K", {
 
 cy.on('tap', 'node', function (evt) {
 	selectedNode = evt.target;
-	console.log('tapped ' + selectedNode.id(), evt.target.data('chessPos'),evt.target.data('color'));
-	for(let i = 0;i < chessBoard.children.length;i++){
+	console.log('tapped ' + selectedNode.id(), evt.target.data('chessPos'), evt.target.data('color'));
+	for (let i = 0; i < chessBoard.children.length; i++) {
 		clearSquare(chessBoard.children[i])
 	}
-	decodeChessPieces(selectedNode.data("chessPos")).forEach(function(piece){
-		let p = createChessPiece(piece.type,piece.pos,piece.color)
+	decodeChessPieces(selectedNode.data("chessPos")).forEach(function (piece) {
+		let p = createChessPiece(piece.type, piece.pos, piece.color)
 		console.log(piece.type)
 		p.turns = piece.turns
 	})
@@ -141,6 +160,29 @@ function moveWritter(move) {
 	}) ? fromChar : ""
 	var to = letters[move.to.x] + move.to.y
 	return move.piece + from + x + to
+}
+
+function symbolWritter(move) {
+	var x = move.take ? "x" : ""
+	var c = move.color == "white" ? whiteChessPieces.slice() : blackChessPieces.slice()
+	c.splice(c.findIndex(function (el) {
+		return el.pos.x == move.to.x && el.pos.y == move.to.y
+	}), 1)
+	var fromChar = letters[move.from.x]
+	var from = c.some(function (p) {
+		if (p.pos.x == move.from.x) {
+			fromChar = move.from.y
+		} else {
+			fromChar = letters[move.from.x]
+		}
+		return p.type.condition({
+			piece: move.take ? (move.color == "white" ? "black" : "white") : 0,
+			x: move.to.x,
+			y: move.to.y
+		}, p) && p.type.name == move.piece
+	}) ? fromChar : ""
+	var to = letters[move.to.x] + move.to.y
+	return chessPiecesNames[move.color][move.piece] + from + x + to
 }
 // Counter for square IDs
 let squareId = 0;
@@ -602,7 +644,7 @@ function handleDrop(e) {
 			}
 			chessHistory.push(move)
 			color = color == "white" ? "black" : "white"
-			createNode(moveWritter(move))
+			createNode(symbolWritter(move))
 		} else {
 			console.log(ogPos)
 			draggedPiece.chessPiece.turns -= 1
@@ -862,37 +904,45 @@ function getLinearMoves(position, directions) {
 	return moves;
 }
 chessBoardArray = updateChessBoardArray()
-function createNode(name){
+
+function createNode(name) {
 	const parentPos = selectedNode.position();
 	const parentName = selectedNode.id()
-	let count= selectedNode.connectedEdges().length
+	let count = selectedNode.connectedEdges().length
 	let depth = selectedNode.data("depth")
-	if(parentName == "start"){
+	if (parentName == "start") {
 		count += 1
 	}
 	let dclone = encodeChessPieces(chessPieces)
-	let node  = cy.add({
-	group: 'nodes',
-	data: {
-		weight: 75,
-		id: moveCounter,
-		move:name,
-		//for some reason it becomes its last child(without the first one)
-		chessPos: dclone,
-		color:color
-	},
-	//position: {x:parentPos.x+100,y:parentPos.y + Math.floor(count/2)*200/depth*1.5 * (count%2*2-1)},
-	grabbable: false
-})
+	let node = cy.add({
+		group: 'nodes',
+		data: {
+			weight: 75,
+			id: moveCounter,
+			move: name,
+			//for some reason it becomes its last child(without the first one)
+			chessPos: dclone,
+			color: color
+		},
+		position: {
+			x: parentPos.x,
+			y: parentPos.y
+		},
+		grabbable: false
+	})
 	cy.add({
-	group: 'edges',
-	data: {
-		id: parentName+"-"+moveCounter,
-		source: parentName,
-		target: moveCounter,
-	},
-})
-	cy.layout({ name: 'dagre',rankDir: 'LR', animate: false}).run();
+		group: 'edges',
+		data: {
+			id: parentName + "-" + moveCounter,
+			source: parentName,
+			target: moveCounter,
+		},
+	})
+	cy.layout({
+		name: 'dagre',
+		rankDir: 'LR',
+		animate: true
+	}).run();
 	selectedNode = node
 }
 var start = cy.add({
@@ -900,9 +950,9 @@ var start = cy.add({
 	data: {
 		weight: 75,
 		id: 'start',
-		move:"start",
+		move: "start",
 		chessPos: encodeChessPieces(chessPieces),
-		color:color
+		color: color
 	},
 	position: {
 		y: 300,
@@ -912,31 +962,33 @@ var start = cy.add({
 })
 
 function deepClone(obj) {
-    if (obj === null || typeof obj !== 'object') {
-        return obj; // Return the value if it's a primitive
-    }
+	if (obj === null || typeof obj !== 'object') {
+		return obj; // Return the value if it's a primitive
+	}
 
-    if (Array.isArray(obj)) {
-        return obj.map(item => deepClone(item)); // Recursively clone each item in an array
-    }
+	if (Array.isArray(obj)) {
+		return obj.map(item => deepClone(item)); // Recursively clone each item in an array
+	}
 
-    const clone = Object.create(Object.getPrototypeOf(obj)); // Create a new object with the same prototype
-    Object.keys(obj).forEach(key => {
-        clone[key] = deepClone(obj[key]); // Recursively clone each property
-    });
+	const clone = Object.create(Object.getPrototypeOf(obj)); // Create a new object with the same prototype
+	Object.keys(obj).forEach(key => {
+		clone[key] = deepClone(obj[key]); // Recursively clone each property
+	});
 
-    return clone;
+	return clone;
 }
+
 function encodeChessPieces(chessPieces) {
-    return chessPieces.map(piece => 
-      `${piece.type.name}|${JSON.stringify(piece.pos)}|${piece.color}|${piece.turns}`
-    ).join(';');
+	return chessPieces.map(piece =>
+		`${piece.type.name}|${JSON.stringify(piece.pos)}|${piece.color}|${piece.turns}`
+	).join(';');
 }
+
 function decodeChessPieces(encodedString) {
-    return encodedString.split(';').map(pieceStr => {
-        const [typeStr, posStr, color, turns] = pieceStr.split('|');
-        let type;
-		switch(typeStr){
+	return encodedString.split(';').map(pieceStr => {
+		const [typeStr, posStr, color, turns] = pieceStr.split('|');
+		let type;
+		switch (typeStr) {
 			case "":
 				type = pawn
 				break;
@@ -959,15 +1011,97 @@ function decodeChessPieces(encodedString) {
 				type = queen
 		}
 
-        // Attach the correct action function based on type.name
+		// Attach the correct action function based on type.name
 		console.log(posStr)
-        return {
-            type: type, 
-            pos: JSON.parse(posStr), 
-            color: color, 
-            turns: parseInt(turns, 10)
-        };
-    });
+		return {
+			type: type,
+			pos: JSON.parse(posStr),
+			color: color,
+			turns: parseInt(turns, 10)
+		};
+	});
 }
 
+function download() {
+	let cyData = cy.json();
+	let cyString = JSON.stringify(cyData);
+	return cyString
+}
+downloadCy.addEventListener("click", function (e) {
+	let info = download()
+	let cyFile = new File([info], "cy.json", {
+		type: "application/json"
+	})
+	const link = document.createElement("a");
+	link.href = URL.createObjectURL(cyFile);
+	link.download = name;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+})
+uploadCy.addEventListener("change", function (ev) {
+	const selectedFile = ev.target.files[0];
+	console.log(ev)
+	const fileReader = new FileReader();
+	if (selectedFile) {
+		fileReader.onload = (e) => {
+			let info = JSON.parse(e.target.result)
+			console.log(info.elements)
+			cy = cytoscape({
+				container: document.getElementById('cy'), // container to render in
+
+				elements: info.elements,
+
+				style: [ // the stylesheet for the graph
+					{
+						selector: 'node',
+						style: {
+							'shape': 'rectangle',
+							'width': 50,
+							'height': 50,
+							'background-color': 'antiquewhite',
+							'label': 'data(move)', // Set the label to display the id
+							'text-halign': 'center', // Center the text horizontally
+							'text-valign': 'center',
+
+						},
+                },
+					{
+						selector: 'edge',
+						style: {
+							'width': 3,
+							'line-color': 'black',
+							'target-arrow-color': 'black',
+							'target-arrow-shape': 'triangle'
+						}
+                }
+            ],
+
+				layout: {
+					name: 'breadthfirst'
+				}
+			})
+			cy.layout({
+				name: 'dagre',
+				rankDir: 'LR',
+				animate: false
+			}).run();
+			cy.on('tap', 'node', function (evt) {
+				selectedNode = evt.target;
+				console.log('tapped ' + selectedNode.id(), evt.target.data('chessPos'), evt.target.data('color'));
+				for (let i = 0; i < chessBoard.children.length; i++) {
+					clearSquare(chessBoard.children[i])
+				}
+				decodeChessPieces(selectedNode.data("chessPos")).forEach(function (piece) {
+					let p = createChessPiece(piece.type, piece.pos, piece.color)
+					console.log(piece.type)
+					p.turns = piece.turns
+				})
+				color = selectedNode.data("color")
+			})
+		}
+		fileReader.readAsText(selectedFile)
+
+	}
+})
 var selectedNode = start;

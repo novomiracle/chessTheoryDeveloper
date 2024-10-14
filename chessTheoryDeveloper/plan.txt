@@ -8,3 +8,8 @@
 
 done - bug sliding through the opposite pieces
 	- not checking the squares while sliding?
+	
+	 chessPiecesNames = {
+		"white":{"":"","N":"U+2658","B":"U+2657","R":"U+2656","Q":"U+2655","K":"U+2654"},
+		"black":{"":"","N":"U+265E","B":"U+265D","R":"U+265C","Q":"U+265B","K":"U+265A"}
+	}
